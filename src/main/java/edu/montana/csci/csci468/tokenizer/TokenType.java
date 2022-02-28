@@ -21,6 +21,7 @@ public enum TokenType {
     ELSE, FALSE, FUNCTION, FOR, IF, IN, NOT, NULL,
     PRINT, RETURN, TRUE, VAR,
 
+    COMMENT,
     ERROR,
     EOF;
 
