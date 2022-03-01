@@ -85,18 +85,57 @@ public class CatScriptParser {
     //============================================================
 
     private Expression parseExpression() {
-        return parseAdditiveExpression();
+        return parseEqualityExpression();
+    }
+
+    private Expression parseEqualityExpression() {
+        Expression expression = parseComparisonExpression();
+        while (tokens.match(EQUAL_EQUAL, BANG_EQUAL)) {
+            Token operator = tokens.consumeToken();
+            final Expression rightHandSide = parseComparisonExpression();
+            EqualityExpression equalityExpression = new EqualityExpression(operator, expression, rightHandSide);
+            equalityExpression.setStart(expression.getStart());
+            equalityExpression.setEnd(rightHandSide.getEnd());
+            expression = equalityExpression;
+        }
+        return expression;
+    }
+
+    private Expression parseComparisonExpression() {
+        Expression expression = parseAdditiveExpression();
+        while (tokens.match(LESS, GREATER, LESS_EQUAL, GREATER_EQUAL)) {
+            Token operator = tokens.consumeToken();
+            final Expression rightHandSide = parseAdditiveExpression();
+            ComparisonExpression comparisonExpression = new ComparisonExpression(operator, expression, rightHandSide);
+            comparisonExpression.setStart(expression.getStart());
+            comparisonExpression.setEnd(rightHandSide.getEnd());
+            expression = comparisonExpression;
+        }
+        return expression;
     }
 
     private Expression parseAdditiveExpression() {
-        Expression expression = parseUnaryExpression();
+        Expression expression = parseMultiplyExpression();
         while (tokens.match(PLUS, MINUS)) {
             Token operator = tokens.consumeToken();
-            final Expression rightHandSide = parseUnaryExpression();
+            final Expression rightHandSide = parseMultiplyExpression();
             AdditiveExpression additiveExpression = new AdditiveExpression(operator, expression, rightHandSide);
             additiveExpression.setStart(expression.getStart());
             additiveExpression.setEnd(rightHandSide.getEnd());
             expression = additiveExpression;
+        }
+        return expression;
+    }
+
+    private Expression parseMultiplyExpression() {
+        Expression expression = parseUnaryExpression();
+        while (tokens.match(STAR, SLASH)) {
+            Token operator = tokens.consumeToken();
+            final Expression rightHandSide = parseUnaryExpression();
+            FactorExpression factorExpression = new FactorExpression(operator, expression, rightHandSide);
+            factorExpression.setStart(expression.getStart());
+            factorExpression.setEnd(rightHandSide.getEnd());
+            expression = factorExpression;
         }
         return expression;
     }
