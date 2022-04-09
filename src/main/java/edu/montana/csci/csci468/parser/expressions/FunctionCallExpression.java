@@ -7,6 +7,7 @@ import edu.montana.csci.csci468.parser.ErrorType;
 import edu.montana.csci.csci468.parser.ParseError;
 import edu.montana.csci.csci468.parser.SymbolTable;
 import edu.montana.csci.csci468.parser.statements.FunctionDefinitionStatement;
+import edu.montana.csci.csci468.parser.statements.Statement;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -66,7 +67,17 @@ public class FunctionCallExpression extends Expression {
 
     @Override
     public Object evaluate(CatscriptRuntime runtime) {
-        return super.evaluate(runtime);
+        FunctionDefinitionStatement functionStatement = getProgram().getFunction(name);
+        runtime.pushScope();
+        for (int i = 0; i < functionStatement.getParameterCount(); i++) {
+            runtime.setValue(functionStatement.getParameterName(i), arguments.get(i).evaluate(runtime));
+        }
+        List<Statement> body = functionStatement.getBody();
+        for (Statement statement : body) {
+            statement.execute(runtime);
+        }
+        runtime.popScope();
+        return runtime.getValue(name);
     }
 
     @Override

@@ -48,8 +48,15 @@ public class VariableStatement extends Statement {
         if (symbolTable.hasSymbol(variableName)) {
             addError(ErrorType.DUPLICATE_NAME);
         } else {
-            // TODO if there is an explicit type, ensure it is correct
-            //      if not, infer the type from the right hand side expression
+            if (explicitType != null) {
+                if (explicitType.equals(expression.getType()) || explicitType.equals(CatscriptType.OBJECT)) {
+                    type = explicitType;
+                } else {
+                    addError(ErrorType.INCOMPATIBLE_TYPES);
+                }
+            } else {
+                type = expression.getType();
+            }
             symbolTable.registerSymbol(variableName, type);
         }
     }
@@ -63,7 +70,7 @@ public class VariableStatement extends Statement {
     //==============================================================
     @Override
     public void execute(CatscriptRuntime runtime) {
-        super.execute(runtime);
+        runtime.setValue(variableName, expression.evaluate(runtime));
     }
 
     @Override

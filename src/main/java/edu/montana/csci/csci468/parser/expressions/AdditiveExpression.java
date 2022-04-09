@@ -43,8 +43,11 @@ public class AdditiveExpression extends Expression {
             if (!rightHandSide.getType().equals(CatscriptType.INT)) {
                 rightHandSide.addError(ErrorType.INCOMPATIBLE_TYPES);
             }
+        } else if (getType().equals(CatscriptType.STRING)) {
+            if (!leftHandSide.getType().equals(CatscriptType.STRING) && !rightHandSide.getType().equals(CatscriptType.STRING)) {
+                leftHandSide.addError(ErrorType.INCOMPATIBLE_TYPES);
+            }
         }
-        // TODO handle strings
     }
 
     @Override
@@ -67,13 +70,22 @@ public class AdditiveExpression extends Expression {
 
     @Override
     public Object evaluate(CatscriptRuntime runtime) {
-        Integer lhsValue = (Integer) leftHandSide.evaluate(runtime);
-        Integer rhsValue = (Integer) rightHandSide.evaluate(runtime);
-        //TODO handle string case
-        if (isAdd()) {
-            return lhsValue + rhsValue;
+        Object lhsValue = leftHandSide.evaluate(runtime);
+        Object rhsValue = rightHandSide.evaluate(runtime);
+        if (getType().equals(CatscriptType.INT)) {
+            if (isAdd()) {
+                return (Integer) lhsValue + (Integer) rhsValue;
+            } else {
+                return (Integer) lhsValue - (Integer) rhsValue;
+            }
         } else {
-            return lhsValue - rhsValue;
+            if (lhsValue == null) {
+                return "null" + rhsValue.toString();
+            } else if (rhsValue == null) {
+                return lhsValue.toString() + "null";
+            } else {
+                return lhsValue.toString() + rhsValue.toString();
+            }
         }
     }
 

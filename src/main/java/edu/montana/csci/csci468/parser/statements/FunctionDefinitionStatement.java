@@ -98,7 +98,13 @@ public class FunctionDefinitionStatement extends Statement {
     }
 
     private boolean validateReturnCoverage(List<Statement> statements) {
-        // TODO - implement return coverage checking
+        for (Statement statement : statements) {
+            if (this.type == null && statement.getClass() == ReturnStatement.class) {
+                return false;
+            } else if (this.type != null && statement.getClass() == ReturnStatement.class) {
+                return true;
+            }
+        }
         return true;
     }
 
@@ -146,7 +152,7 @@ public class FunctionDefinitionStatement extends Statement {
     //==============================================================
     @Override
     public void execute(CatscriptRuntime runtime) {
-        super.execute(runtime);
+        runtime.setValue(name, this);
     }
 
     @Override

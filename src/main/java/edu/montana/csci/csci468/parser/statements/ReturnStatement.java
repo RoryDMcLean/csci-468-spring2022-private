@@ -43,7 +43,8 @@ public class ReturnStatement extends Statement {
     //==============================================================
     @Override
     public void execute(CatscriptRuntime runtime) {
-        super.execute(runtime);
+        Object returnValue = expression.evaluate(runtime);
+        runtime.setValue(function.getName(), returnValue);
     }
 
     @Override
