@@ -120,16 +120,20 @@ public class CatScriptTokenizer {
         } else if(matchAndConsume('-')) {
             tokenList.addToken(MINUS, "-", start, postion, line, lineOffset);
         } else if(matchAndConsume('/')) {
-            if (matchAndConsume('/')) {
-                while (peek() != '\n' && !tokenizationEnd()) {
-                    takeChar();
-                }
-                if (peek() == '\n') {
-                    line++;
-                }
-                lineOffset += postion - start;
-                tokenList.addToken(COMMENT, src.substring(start + 2, postion), start, postion, line, lineOffset);
-            } else {
+            if (tokenList.hasMoreTokens() && tokenList.lastToken().getType() == SLASH) {
+                postion = src.length();
+            }
+//            if (matchAndConsume('/')) {
+//                while (peek() != '\n' && !tokenizationEnd()) {
+//                    takeChar();
+//                }
+//                if (peek() == '\n') {
+//                    line++;
+//                }
+//                lineOffset += postion - start;
+//                tokenList.addToken(COMMENT, src.substring(start + 2, postion), start, postion, line, lineOffset);
+//            }
+            else {
                 tokenList.addToken(SLASH, "/", start, postion, line, lineOffset);
             }
         } else if(matchAndConsume('*')) {
