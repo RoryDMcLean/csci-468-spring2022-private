@@ -222,19 +222,19 @@ public class CatScriptParser {
 
     private Statement parseFunctionDefinitionStatement() {
         if(tokens.match(FUNCTION)) {
-            FunctionDefinitionStatement functionDefinitionStatement = new FunctionDefinitionStatement();
-            functionDefinitionStatement.setStart(tokens.consumeToken());
-            functionDefinitionStatement.setName(require(IDENTIFIER, functionDefinitionStatement).getStringValue());
-            require(LEFT_PAREN, functionDefinitionStatement);
+            currentFunctionDefinition = new FunctionDefinitionStatement();
+            currentFunctionDefinition.setStart(tokens.consumeToken());
+            currentFunctionDefinition.setName(require(IDENTIFIER, currentFunctionDefinition).getStringValue());
+            require(LEFT_PAREN, currentFunctionDefinition);
             while(!tokens.match(RIGHT_PAREN)) {
-                String paramName = require(IDENTIFIER, functionDefinitionStatement).getStringValue();
+                String paramName = require(IDENTIFIER, currentFunctionDefinition).getStringValue();
                 TypeLiteral type = new TypeLiteral();
 
                 if(tokens.match(COMMA) || tokens.match(RIGHT_PAREN)) {
                     type.setType(CatscriptType.OBJECT);
                 } else {
-                    require(COLON, functionDefinitionStatement);
-                    switch (require(IDENTIFIER, functionDefinitionStatement).getStringValue()) {
+                    require(COLON, currentFunctionDefinition);
+                    switch (require(IDENTIFIER, currentFunctionDefinition).getStringValue()) {
                         case "int":
                             type.setType(CatscriptType.INT);
                             break;
@@ -250,7 +250,7 @@ public class CatScriptParser {
                         case "list":
                             if (tokens.match(LESS)) {
                                 tokens.consumeToken();
-                                switch (require(IDENTIFIER, functionDefinitionStatement).getStringValue()) {
+                                switch (require(IDENTIFIER, currentFunctionDefinition).getStringValue()) {
                                     case "int":
                                         type.setType(CatscriptType.getListType(CatscriptType.INT));
                                         break;
@@ -264,16 +264,16 @@ public class CatScriptParser {
                                         type.setType(CatscriptType.getListType(CatscriptType.OBJECT));
                                         break;
                                 }
-                                require(GREATER, functionDefinitionStatement);
+                                require(GREATER, currentFunctionDefinition);
                             } else {
                                 type.setType(CatscriptType.getListType(CatscriptType.OBJECT));
                             }
                             break;
                     }
                 }
-                functionDefinitionStatement.addParameter(paramName, type);
+                currentFunctionDefinition.addParameter(paramName, type);
                 if(!tokens.match(RIGHT_PAREN)) {
-                    require(COMMA, functionDefinitionStatement);
+                    require(COMMA, currentFunctionDefinition);
                 }
             }
             tokens.consumeToken();
@@ -281,7 +281,7 @@ public class CatScriptParser {
             TypeLiteral returnType = new TypeLiteral();
             if (tokens.match(COLON)) {
                 tokens.consumeToken();
-                switch (require(IDENTIFIER, functionDefinitionStatement).getStringValue()) {
+                switch (require(IDENTIFIER, currentFunctionDefinition).getStringValue()) {
                     case "int":
                         returnType.setType(CatscriptType.INT);
                         break;
@@ -297,7 +297,7 @@ public class CatScriptParser {
                     case "list":
                         if (tokens.match(LESS)) {
                             tokens.consumeToken();
-                            switch (require(IDENTIFIER, functionDefinitionStatement).getStringValue()) {
+                            switch (require(IDENTIFIER, currentFunctionDefinition).getStringValue()) {
                                 case "int":
                                     returnType.setType(CatscriptType.getListType(CatscriptType.INT));
                                     break;
@@ -311,7 +311,7 @@ public class CatScriptParser {
                                     returnType.setType(CatscriptType.getListType(CatscriptType.OBJECT));
                                     break;
                             }
-                            require(GREATER, functionDefinitionStatement);
+                            require(GREATER, currentFunctionDefinition);
                         } else {
                             returnType.setType(CatscriptType.getListType(CatscriptType.OBJECT));
                         }
@@ -322,36 +322,40 @@ public class CatScriptParser {
             } else {
                 returnType = null;
             }
-            functionDefinitionStatement.setType(returnType);
+            currentFunctionDefinition.setType(returnType);
 
-            require(LEFT_BRACE, functionDefinitionStatement);
+            require(LEFT_BRACE, currentFunctionDefinition);
             List<Statement> body = new LinkedList<>();
             while(tokens.hasMoreTokens() && !tokens.match(RIGHT_BRACE)) {
                 if(tokens.match(RETURN)) {
-                    tokens.consumeToken();
-                    body.add(parseReturnStatement(functionDefinitionStatement));
+                    body.add(parseReturnStatement(currentFunctionDefinition));
                 } else {
                     body.add(parseProgramStatement());
                 }
             }
-            functionDefinitionStatement.setBody(body);
-            functionDefinitionStatement.setEnd(require(RIGHT_BRACE, functionDefinitionStatement));
+            currentFunctionDefinition.setBody(body);
+            currentFunctionDefinition.setEnd(require(RIGHT_BRACE, currentFunctionDefinition));
 
-            return functionDefinitionStatement;
+            return currentFunctionDefinition;
         }
         else {
-            return null;
+            return parseReturnStatement(currentFunctionDefinition);
         }
     }
 
     private Statement parseReturnStatement(FunctionDefinitionStatement functionDefinitionStatement) {
-        ReturnStatement returnStatement = new ReturnStatement();
-        returnStatement.setFunctionDefinition(functionDefinitionStatement);
-        if (!tokens.match(RIGHT_BRACE)) {
-            returnStatement.setExpression(parseExpression());
-        }
+        if (tokens.match(RETURN)) {
+            ReturnStatement returnStatement = new ReturnStatement();
+            returnStatement.setFunctionDefinition(functionDefinitionStatement);
+            tokens.consumeToken();
+            if (!tokens.match(RIGHT_BRACE)) {
+                returnStatement.setExpression(parseExpression());
+            }
 
-        return returnStatement;
+            return returnStatement;
+        } else {
+            return null;
+        }
     }
 
     //============================================================
