@@ -79,7 +79,7 @@ public class ListLiteralExpression extends Expression {
             value.compile(code);
             box(code, value.getType());
             code.addMethodInstruction(Opcodes.INVOKEVIRTUAL, ByteCodeGenerator.internalNameFor(LinkedList.class),
-                    "add", "(Ljava/Lang/Object;)Z");
+                    "add", "(Ljava/lang/Object;)Z");
             code.addInstruction(Opcodes.POP);
         }
     }

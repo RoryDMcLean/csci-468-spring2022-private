@@ -6,6 +6,7 @@ import edu.montana.csci.csci468.parser.CatscriptType;
 import edu.montana.csci.csci468.parser.ErrorType;
 import edu.montana.csci.csci468.parser.ParseError;
 import edu.montana.csci.csci468.parser.SymbolTable;
+import org.objectweb.asm.Opcodes;
 
 public class IdentifierExpression extends Expression {
     private final String name;
@@ -50,7 +51,11 @@ public class IdentifierExpression extends Expression {
 
     @Override
     public void compile(ByteCodeGenerator code) {
-        super.compile(code);
+        if (type.equals(CatscriptType.INT) || type.equals(CatscriptType.BOOLEAN)) {
+            code.addVarInstruction(Opcodes.ILOAD, code.resolveLocalStorageSlotFor(name));
+        } else {
+            code.addVarInstruction(Opcodes.ALOAD, code.resolveLocalStorageSlotFor(name));
+        }
     }
 
 

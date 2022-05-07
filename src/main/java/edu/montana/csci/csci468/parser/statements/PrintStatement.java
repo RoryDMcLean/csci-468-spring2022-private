@@ -2,8 +2,13 @@ package edu.montana.csci.csci468.parser.statements;
 
 import edu.montana.csci.csci468.bytecode.ByteCodeGenerator;
 import edu.montana.csci.csci468.eval.CatscriptRuntime;
+import edu.montana.csci.csci468.parser.CatscriptType;
 import edu.montana.csci.csci468.parser.SymbolTable;
 import edu.montana.csci.csci468.parser.expressions.Expression;
+import edu.montana.csci.csci468.parser.expressions.IdentifierExpression;
+import org.objectweb.asm.Opcodes;
+
+import java.io.PrintStream;
 
 public class PrintStatement extends Statement {
     private Expression expression;
@@ -37,7 +42,13 @@ public class PrintStatement extends Statement {
 
     @Override
     public void compile(ByteCodeGenerator code) {
-        super.compile(code);
+        code.addVarInstruction(Opcodes.ALOAD, 0);
+        expression.compile(code);
+        if (expression.getType().equals(CatscriptType.INT) || expression.getType().equals(CatscriptType.BOOLEAN)) {
+            box(code, expression.getType());
+        }
+        code.addMethodInstruction(Opcodes.INVOKEVIRTUAL, ByteCodeGenerator.internalNameFor(CatScriptProgram.class),
+                "print", "(Ljava/lang/Object;)V");
     }
 
 }

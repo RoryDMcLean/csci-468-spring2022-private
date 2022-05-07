@@ -7,6 +7,7 @@ import edu.montana.csci.csci468.parser.ErrorType;
 import edu.montana.csci.csci468.parser.ParseError;
 import edu.montana.csci.csci468.parser.SymbolTable;
 import edu.montana.csci.csci468.tokenizer.Token;
+import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 
 import static edu.montana.csci.csci468.tokenizer.TokenType.*;
@@ -94,16 +95,25 @@ public class ComparisonExpression extends Expression {
     public void compile(ByteCodeGenerator code) {
         getLeftHandSide().compile(code);
         getRightHandSide().compile(code);
+
+        Label setToFalse = new Label();
+        Label end = new Label();
+
         if (this.isLessThan()) {
-            code.addInstruction(Opcodes.IF_ICMPLT);
+            code.addJumpInstruction(Opcodes.IF_ICMPGE, setToFalse);
         } else if (this.isGreater()) {
-            code.addInstruction(Opcodes.IF_ICMPGT);
+            code.addJumpInstruction(Opcodes.IF_ICMPLE, setToFalse);
         } else if (this.isLessThanOrEqual()) {
-            code.addInstruction(Opcodes.IF_ICMPLE);
+            code.addJumpInstruction(Opcodes.IF_ICMPGT, setToFalse);
         } else {
-            code.addInstruction(Opcodes.IF_ICMPGE);
+            code.addJumpInstruction(Opcodes.IF_ICMPLT, setToFalse);
         }
-        code.pushConstantOntoStack(1);
+
+        code.pushConstantOntoStack(true);
+        code.addJumpInstruction(Opcodes.GOTO, end);
+        code.addLabel(setToFalse);
+        code.pushConstantOntoStack(false);
+        code.addLabel(end);
     }
 
 }
