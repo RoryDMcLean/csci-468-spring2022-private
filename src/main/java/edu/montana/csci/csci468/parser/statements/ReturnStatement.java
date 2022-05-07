@@ -64,7 +64,7 @@ public class ReturnStatement extends Statement {
 
             if (returnType.equals(CatscriptType.OBJECT) &&
                     (expressionType.equals(CatscriptType.INT) || expressionType.equals(CatscriptType.BOOLEAN))) {
-                box(code, function.getType());
+                box(code, expressionType);
             }
 
             if (returnType.equals(CatscriptType.INT) || returnType.equals(CatscriptType.BOOLEAN)) {

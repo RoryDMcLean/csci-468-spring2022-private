@@ -315,6 +315,7 @@ public class CatScriptParser {
                         } else {
                             returnType.setType(CatscriptType.getListType(CatscriptType.OBJECT));
                         }
+                        break;
                     default:
                         returnType = null;
                 }
